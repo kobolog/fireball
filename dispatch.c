@@ -18,11 +18,13 @@ BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map chain = {
 	.pinning	= PIN_GLOBAL_NS,
 };
 
-BPF_GRAFT(CHAIN_TID, 0) int rs0(struct xdp_md *ctx) {
+BPF_GRAFT(CHAIN_TID, 0) int rs0(struct xdp_md *ctx)
+{
 	return forward(ctx);
 }
 
-BPF_GRAFT(CHAIN_TID, 1) int rs1(struct xdp_md *ctx) {
+BPF_GRAFT(CHAIN_TID, 1) int rs1(struct xdp_md *ctx)
+{
 	return XDP_PASS;
 }
 
@@ -57,11 +59,19 @@ BPF_SEC(ELF_SECTION_PROG) int start(struct xdp_md *ctx)
 	uint32_t proto = parse_ethernet(
 		(void*)(uint64_t)ctx->data, (void*)(uint64_t)ctx->data_end, &off);
 
+	uint32_t src, dst;
+	uint32_t ip_proto;
+
 	switch (proto) {
-	case ETH_P_ARP:
+	case htons(ETH_P_ARP):
 		return XDP_PASS;
-	case ETH_P_IP:
-	case ETH_P_IPV6:
+	case htons(ETH_P_IP):
+		ip_proto = parse_ip4(
+			(void*)(uint64_t)ctx->data + off, (void*)(uint64_t)ctx->data_end,
+			&src, &dst);
+		printt("ip4 (proto %u) from %u to %u\n", ip_proto, src, dst);
+		break;
+	case htons(ETH_P_IPV6):
 		break;
 	default:
 		return XDP_DROP;

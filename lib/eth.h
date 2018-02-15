@@ -18,31 +18,32 @@ struct vlan_hdr {
         __be16  h_vlan_encapsulated_proto;
 };
 
-BPF_INLINE int parse_ethernet(void *it, void *end, uint64_t *offset) {
+static BPF_INLINE int parse_ethernet(void *it, void *end, uint64_t *offset)
+{
 	struct ethhdr *eth = it;
-	uint64_t off = sizeof(*eth);
+	uint64_t off = sizeof(struct ethhdr);
 
 	if (it + off > end) {
 		return -1;
 	}
 
-	uint16_t proto = ntohs(eth->h_proto);
+	uint16_t proto = eth->h_proto;
 
 	// Strip off VLAN headers.
 	#pragma unroll
 	for (int i = 0; i < MAX_VLAN_HDRS; i++) {
-		if (proto != ETH_P_8021Q && proto != ETH_P_8021AD) {
+		if (proto != htons(ETH_P_8021Q) && proto != htons(ETH_P_8021AD)) {
 			break;
 		}
 
 		struct vlan_hdr *vhdr = it + off;
-		off += sizeof(*vhdr);
+		off += sizeof(struct vlan_hdr);
 
 		if (it + off > end) {
 			return -1;
 		}
 
-		proto = ntohs(vhdr->h_vlan_encapsulated_proto);
+		proto = vhdr->h_vlan_encapsulated_proto;
 	}
 
 	*offset = off;
