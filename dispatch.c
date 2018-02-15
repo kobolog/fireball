@@ -1,5 +1,9 @@
 #include "common.h"
 
+#include "lib/eth.h"
+#include "lib/ip4.h"
+#include "lib/ip6.h"
+
 BPF_LICENSE("GPL");
 
 #define CHAIN_TID 0
@@ -49,6 +53,20 @@ BPF_INLINE int forward(struct xdp_md *ctx)
 
 BPF_SEC(ELF_SECTION_PROG) int start(struct xdp_md *ctx)
 {
+	uint64_t off;
+	uint32_t proto = parse_ethernet(
+		(void*)(uint64_t)ctx->data, (void*)(uint64_t)ctx->data_end, &off);
+
+	switch (proto) {
+	case ETH_P_ARP:
+		return XDP_PASS;
+	case ETH_P_IP:
+	case ETH_P_IPV6:
+		break;
+	default:
+		return XDP_DROP;
+	}
+
 	const int idx = 0;
 
 	int *it = (int*)map_lookup_elem(&iterator, &idx);
