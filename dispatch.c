@@ -2,22 +2,33 @@
 
 BPF_LICENSE("GPL");
 
+#define CHAIN_TID 0
+
 // Holds the probe chain.
 BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map chain = {
 	.type		= BPF_MAP_TYPE_PROG_ARRAY,
 	.size_key	= sizeof(int),
 	.size_value	= sizeof(int),
-	.pinning	= PIN_GLOBAL_NS,
 	.max_elem	= 32,
+	.id		= CHAIN_TID,
+	.pinning	= PIN_GLOBAL_NS,
 };
 
-// Per-CPU probe iterator.
+BPF_GRAFT(CHAIN_TID, 0) int rs0(struct xdp_md *ctx) {
+	return forward(ctx);
+}
+
+BPF_GRAFT(CHAIN_TID, 1) int rs1(struct xdp_md *ctx) {
+	return XDP_PASS;
+}
+
+// Per-CPU ruleset iterator.
 BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map iterator = {
 	.type		= BPF_MAP_TYPE_PERCPU_ARRAY,
 	.size_key	= sizeof(int),
 	.size_value	= sizeof(int),
-	.pinning	= PIN_NONE,
 	.max_elem	= 1,
+	.pinning	= PIN_NONE,
 };
 
 BPF_INLINE int forward(struct xdp_md *ctx)
@@ -29,14 +40,14 @@ BPF_INLINE int forward(struct xdp_md *ctx)
 		return XDP_ABORTED;
 	}
 
-	// Call the next probe.
+	// Call the next ruleset.
 	xdp_tail_call(ctx, &chain, (*it)++);
 
-	// Default action is to drop.
-	return XDP_PASS;
+	// Default action is to drop all.
+	return XDP_DROP;
 }
 
-BPF_SEC("prog") int start(struct xdp_md *ctx)
+BPF_SEC(ELF_SECTION_PROG) int start(struct xdp_md *ctx)
 {
 	const int idx = 0;
 
@@ -45,7 +56,7 @@ BPF_SEC("prog") int start(struct xdp_md *ctx)
 		return XDP_ABORTED;
 	}
 
-	// Reset the chain probe iterator.
+	// Reset the chain ruleset iterator.
 	*it = 0;
 
 	return forward(ctx);
