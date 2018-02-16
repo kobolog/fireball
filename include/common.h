@@ -47,5 +47,5 @@ static BPF_INLINE int forward(struct xdp_md *ctx)
 	xdp_tail_call(ctx, &chain, (*it)++);
 
 	// Default action is to drop all.
-	return XDP_PASS;
+	return XDP_DROP;
 }
