@@ -45,9 +45,10 @@ enum {
 static BPF_INLINE int handle_ip4(void *ptr, void *end)
 {
 	uint32_t        src, dst;
+	uint64_t	off;
 	struct pfx_v4_t pfx = {};
 
-	if (parse_ip4(ptr, end, &src, &dst) < 0) {
+	if (parse_ip4(ptr, end, &src, &dst, &off) < 0) {
 		return DENY;
 	}
 

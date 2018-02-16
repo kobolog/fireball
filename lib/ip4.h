@@ -5,7 +5,7 @@
 #include <linux/in.h>
 #include <linux/ip.h>
 
-static BPF_INLINE int parse_ip4(void *ptr, void *end, uint32_t *src, uint32_t *dst)
+static BPF_INLINE int parse_ip4(void *ptr, void *end, uint32_t *src, uint32_t *dst, uint64_t *off)
 {
 	struct iphdr *hdr = ptr;
 
@@ -15,6 +15,8 @@ static BPF_INLINE int parse_ip4(void *ptr, void *end, uint32_t *src, uint32_t *d
 
 	*src = hdr->saddr;
 	*dst = hdr->daddr;
+	*off = hdr->ihl << 2;
+
 
 	return hdr->protocol;
 }

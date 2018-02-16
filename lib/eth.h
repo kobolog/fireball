@@ -18,12 +18,12 @@ struct vlan_hdr {
         __be16  h_vlan_encapsulated_proto;
 };
 
-static BPF_INLINE int parse_ethernet(void *ptr, void *end, uint64_t *offset)
+static BPF_INLINE int parse_ethernet(void *ptr, void *end, uint64_t *off)
 {
 	struct ethhdr *eth = ptr;
-	uint64_t off = sizeof(struct ethhdr);
+	uint64_t len = sizeof(struct ethhdr);
 
-	if (ptr + off > end) {
+	if (ptr + len > end) {
 		return -1;
 	}
 
@@ -36,16 +36,16 @@ static BPF_INLINE int parse_ethernet(void *ptr, void *end, uint64_t *offset)
 			break;
 		}
 
-		struct vlan_hdr *vhdr = ptr + off;
-		off += sizeof(struct vlan_hdr);
+		struct vlan_hdr *vhdr = ptr + len;
+		len += sizeof(struct vlan_hdr);
 
-		if (ptr + off > end) {
+		if (ptr + len > end) {
 			return -1;
 		}
 
 		proto = vhdr->h_vlan_encapsulated_proto;
 	}
 
-	*offset = off;
+	*off = len;
 	return proto;
 }
