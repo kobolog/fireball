@@ -39,9 +39,9 @@ BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map iterator = {
 
 BPF_INLINE int forward(struct xdp_md *ctx)
 {
-	const int idx = 0;
+	const int id = 0;
 
-	int *it = (int*)map_lookup_elem(&iterator, &idx);
+	int *it = (int*)map_lookup_elem(&iterator, &id);
 	if (!it) {
 		return XDP_ABORTED;
 	}
@@ -55,31 +55,25 @@ BPF_INLINE int forward(struct xdp_md *ctx)
 
 BPF_SEC(ELF_SECTION_PROG) int start(struct xdp_md *ctx)
 {
-	uint64_t off;
-	uint32_t proto = parse_ethernet(
-		(void*)(uint64_t)ctx->data, (void*)(uint64_t)ctx->data_end, &off);
+	void *ptr = (void*)(uint64_t)ctx->data,
+         *end = (void*)(uint64_t)ctx->data_end;
 
-	uint32_t src, dst;
-	uint32_t ip_proto;
+	uint64_t off;
+	uint32_t proto = parse_ethernet(ptr, end, &off);
 
 	switch (proto) {
 	case htons(ETH_P_ARP):
 		return XDP_PASS;
 	case htons(ETH_P_IP):
-		ip_proto = parse_ip4(
-			(void*)(uint64_t)ctx->data + off, (void*)(uint64_t)ctx->data_end,
-			&src, &dst);
-		printt("ip4 (proto %u) from %u to %u\n", ip_proto, src, dst);
-		break;
 	case htons(ETH_P_IPV6):
 		break;
 	default:
 		return XDP_DROP;
 	}
 
-	const int idx = 0;
+	const int id = 0;
 
-	int *it = (int*)map_lookup_elem(&iterator, &idx);
+	int *it = (int*)map_lookup_elem(&iterator, &id);
 	if (!it) {
 		return XDP_ABORTED;
 	}

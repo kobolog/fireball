@@ -5,11 +5,11 @@
 #include <linux/in.h>
 #include <linux/ip.h>
 
-static BPF_INLINE int parse_ip4(void *it, void *end, uint32_t *src, uint32_t *dst)
+static BPF_INLINE int parse_ip4(void *ptr, void *end, uint32_t *src, uint32_t *dst)
 {
-	struct iphdr *hdr = it;
+	struct iphdr *hdr = ptr;
 
-	if (it + sizeof(struct iphdr) > end) {
+	if (ptr + sizeof(struct iphdr) > end) {
 		return -1;
 	}
 
