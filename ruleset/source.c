@@ -6,16 +6,30 @@
 
 BPF_LICENSE("GPL");
 
-#define RULE_TABLE_SIZE 1024
+struct pfx_v4_t {
+	struct bpf_lpm_trie_key key;
+	uint8_t addr[4];
+};
 
-struct prefix_t {
+struct pfx_v6_t {
 	struct bpf_lpm_trie_key key;
 	uint8_t addr[16];
 };
 
-BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map rules = {
+#define RULE_TABLE_SIZE 1024
+
+BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map rules_v4 = {
 	.type		= BPF_MAP_TYPE_LPM_TRIE,
-	.size_key	= sizeof(struct prefix_t),
+	.size_key	= sizeof(struct pfx_v4_t),
+	.size_value	= sizeof(int),
+	.flags		= BPF_F_NO_PREALLOC,
+	.max_elem	= RULE_TABLE_SIZE,
+	.pinning	= PIN_OBJECT_NS,
+};
+
+BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map rules_v6 = {
+	.type		= BPF_MAP_TYPE_LPM_TRIE,
+	.size_key	= sizeof(struct pfx_v6_t),
 	.size_value	= sizeof(int),
 	.flags		= BPF_F_NO_PREALLOC,
 	.max_elem	= RULE_TABLE_SIZE,
@@ -31,7 +45,7 @@ enum {
 static BPF_INLINE int handle_ip4(void *ptr, void *end)
 {
 	uint32_t        src, dst;
-	struct prefix_t pfx = {};
+	struct pfx_v4_t pfx = {};
 
 	if (parse_ip4(ptr, end, &src, &dst) < 0) {
 		return DENY;
@@ -40,7 +54,7 @@ static BPF_INLINE int handle_ip4(void *ptr, void *end)
 	pfx.key.prefixlen = 32;
 	memcpy(pfx.addr, &src, sizeof(src));
 
-	int *rule = map_lookup_elem(&rules, &pfx);
+	int *rule = map_lookup_elem(&rules_v4, &pfx);
 	if (!rule) {
 		return DEFER;
 	}
@@ -79,3 +93,4 @@ BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 	
 	return forward(ctx);
 }
+
