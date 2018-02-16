@@ -37,6 +37,7 @@ BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map rules_v6 = {
 };
 
 enum {
+	ERROR = -1,
 	ALLOW,
 	DENY,
 	DEFER
@@ -49,7 +50,7 @@ static BPF_INLINE int handle_ip4(void *ptr, void *end)
 	struct pfx_v4_t pfx = {};
 
 	if (parse_ip4(ptr, end, &src, &dst, &off) < 0) {
-		return DENY;
+		return ERROR;
 	}
 
 	pfx.key.prefixlen = 32;
@@ -79,15 +80,16 @@ BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 	int rule = 0;
 
 	switch (proto) {
-	case ETH_P_IP:
+	case htons(ETH_P_IP):
 		rule = handle_ip4(ptr + off, end);
 		break;
-	case ETH_P_IPV6:
+	case htons(ETH_P_IPV6):
 		rule = handle_ip6(ptr + off, end);
 		break;
 	}
 
 	switch (rule) {
+	case ERROR: return XDP_DROP;
 	case ALLOW: return XDP_PASS;
 	case DENY:  return XDP_DROP;
 	}
