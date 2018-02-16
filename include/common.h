@@ -46,6 +46,6 @@ static BPF_INLINE int forward(struct xdp_md *ctx)
 	// Call the next ruleset.
 	xdp_tail_call(ctx, &chain, (*it)++);
 
-	// Default action is to drop all.
+	// Drop if no ruleset could come up with a decision.
 	return XDP_DROP;
 }

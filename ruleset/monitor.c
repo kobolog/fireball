@@ -2,7 +2,7 @@
 
 BPF_LICENSE("GPL");
 
-enum counter_id {
+enum {
 	TOTAL,
 	__MAX_COUNTER_ID,
 };
@@ -15,7 +15,8 @@ BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map counters = {
 	.pinning	= PIN_OBJECT_NS,
 };
 
-BPF_SEC(ELF_SECTION_PROG) int start(struct xdp_md *ctx) {
+BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
+{
 	const int id = TOTAL;
 
 	uint64_t *c = (uint64_t*)map_lookup_elem(&counters, &id);
