@@ -93,7 +93,7 @@ BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 	uint64_t off;
 	uint32_t proto = parse_ethernet(ptr, end, &off);
 
-	int rule = 0;
+	int rule = DEFER;
 
 	switch (proto) {
 	case htons(ETH_P_IP):

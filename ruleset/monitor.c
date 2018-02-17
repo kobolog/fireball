@@ -26,5 +26,5 @@ BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 
 	(*c)++;
 
-	return XDP_PASS;
+	return forward(ctx);
 }
