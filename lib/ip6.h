@@ -50,15 +50,9 @@ static BPF_INLINE int parse_ip6(
 			// Explicitly ban fragmentation.
 			return -1;
 
-		case IPPROTO_TCP:
-		case IPPROTO_UDP:
-		case IPPROTO_ICMPV6:
+		default:
 			*off = len;
 			return type;
-
-		default:
-			// Got some unknown header type.
-			return -1;
 		}
 	}
 
