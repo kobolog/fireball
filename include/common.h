@@ -2,8 +2,8 @@
 
 #include <iproute2/bpf_api.h>
 
-#define BPF_INLINE    __attribute__((always_inline)) inline
-#define BPF_SEC(NAME) __attribute__((section(NAME), used))
+#define BPF_INLINE     __attribute__((always_inline)) inline
+#define BPF_SEC(TITLE) __attribute__((section(TITLE), used))
 
 #define BPF_STR(v) #v
 #define BPF_GRAFT(K, V) BPF_SEC(BPF_STR(K) "/" BPF_STR(V))
