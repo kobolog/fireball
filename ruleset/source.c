@@ -66,7 +66,23 @@ static BPF_INLINE int handle_ip4(void *ptr, void *end)
 
 static BPF_INLINE int handle_ip6(void *ptr, void *end)
 {
-	return DEFER;
+	struct in6_addr src, dst;
+	uint64_t	off;
+	struct pfx_v6_t pfx = {};
+
+	if (parse_ip6(ptr, end, &src, &dst, &off) < 0) {
+		return ERROR;
+	}
+
+	pfx.key.prefixlen = 128;
+	memcpy(pfx.addr, &src, sizeof(src));
+
+	int *rule = map_lookup_elem(&rules_v6, &pfx);
+	if (!rule) {
+		return DEFER;
+	}
+
+	return *rule;
 }
 
 BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
