@@ -53,7 +53,8 @@ static BPF_INLINE int parse_ip6(
 		case IPPROTO_TCP:
 		case IPPROTO_UDP:
 		case IPPROTO_ICMPV6:
-			break;
+			*off = len;
+			return type;
 
 		default:
 			// Got some unknown header type.
@@ -61,6 +62,6 @@ static BPF_INLINE int parse_ip6(
 		}
 	}
 
-	*off = len;
-	return type;
+	// Too many optional headers.
+	return -1;
 }
