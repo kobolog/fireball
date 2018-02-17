@@ -46,8 +46,8 @@ static BPF_INLINE int parse_ip6(
 			len += hdrsz;
 			break;
 
+		// Explicitly ban fragmentation.
 		case IPPROTO_FRAGMENT:
-			// Explicitly ban fragmentation.
 			return -1;
 
 		default:
