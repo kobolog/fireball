@@ -5,8 +5,8 @@
 #include <linux/in.h>
 #include <linux/ip.h>
 
-#define IP_MF	   0x2000
-#define IP_OFFMASK 0x1FFF
+#define IP_MF		0x2000
+#define IP_OFFMASK	0x1FFF
 
 static BPF_INLINE int parse_ip4(void *ptr, void *end, uint32_t *src, uint32_t *dst, uint64_t *off)
 {
