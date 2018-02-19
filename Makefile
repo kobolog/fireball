@@ -1,6 +1,6 @@
 CC      = clang
 CFLAGS  = -O2 -Wall -g --target=bpf -I include -I .
-RS	= bypass monitor icmp source
+RS	= drop icmp monitor source
 
 %.o: %.c include/common.h $(wildcard lib/*.h)
 	$(CC) $(CFLAGS) -c $< -o $@

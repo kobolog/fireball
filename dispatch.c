@@ -6,12 +6,6 @@
 
 BPF_LICENSE("GPL");
 
-// Default ruleset when no other rulesets are defined.
-BPF_GRAFT(CHAIN_TID, 0) int bypass(struct xdp_md *ctx)
-{
-	return XDP_PASS;
-}
-
 BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 {
 	void *ptr = (void*)(uint64_t)ctx->data;

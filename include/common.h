@@ -12,15 +12,12 @@
 static void (*xdp_tail_call)(struct xdp_md *ctx, void *map, uint32_t index)
 	= (void*)BPF_FUNC_tail_call;
 
-#define CHAIN_TID 0
-
 // Holds the probe chain.
 BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map chain = {
 	.type		= BPF_MAP_TYPE_PROG_ARRAY,
 	.size_key	= sizeof(int),
 	.size_value	= sizeof(int),
 	.max_elem	= 32,
-	.id		= CHAIN_TID,
 	.pinning	= PIN_GLOBAL_NS,
 };
 
@@ -46,6 +43,6 @@ static BPF_INLINE int forward(struct xdp_md *ctx)
 	// Call the next ruleset.
 	xdp_tail_call(ctx, &chain, (*it)++);
 
-	// Drop if no ruleset could come up with a decision.
-	return XDP_DROP;
+	// Pass if no ruleset could come up with a decision.
+	return XDP_PASS;
 }
