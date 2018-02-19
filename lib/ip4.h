@@ -21,7 +21,7 @@ static BPF_INLINE int parse_ip4(void *ptr, void *end, uint32_t *src, uint32_t *d
 	*off = hdr->ihl << 2;
 
 	// Explicitly ban fragmentation.
-	if (hdr->frag_off & IP_MF || (hdr->frag_off & IP_OFFMASK) != 0) {
+	if ((hdr->frag_off & ntohs(IP_MF)) || (hdr->frag_off & ntohs(IP_OFFMASK))) {
 		return -1;
 	}
 
