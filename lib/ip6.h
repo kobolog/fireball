@@ -33,16 +33,16 @@ static BPF_INLINE int parse_ip6(
 	*src = hdr->saddr;
 	*dst = hdr->daddr;
 
-	int type = hdr->nexthdr;
+	int next = hdr->nexthdr;
 
 	#pragma unroll
 	for (int i = 0; i < MAX_IPV6_OPT_HDRS; i++) {
-		switch (type) {
+		switch (next) {
 		case IPPROTO_HOPOPTS:
 		case IPPROTO_ROUTING:
 		case IPPROTO_DSTOPTS:
 		case IPPROTO_MH:
-			type = parse_ip6_opt_hdr(ptr + (len & 0xFFFF), end, &hdrsz);
+			next = parse_ip6_opt_hdr(ptr + (len & 0xFFFF), end, &hdrsz);
 			len += hdrsz;
 			break;
 
@@ -52,7 +52,7 @@ static BPF_INLINE int parse_ip6(
 
 		default:
 			*off = len;
-			return type;
+			return next;
 		}
 	}
 
