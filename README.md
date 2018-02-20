@@ -25,3 +25,9 @@ This will compile the main dispatch and all the rulesets into ELF BPF object fil
 # tc exec bpf graft m:globals/chain key 1 obj ruleset/bypass.o type xdp
 # tc exec bpf graft m:globals/chain key 0 obj ruleset/source.o type xdp
 ```
+
+# Optimization Ideas
+
+[ ] Pre-parse packets into TCP/UDP metadata in the dispatch.
+[ ] Incrementally parse packets in chain steps on demand.
+[ ] Parsing stores pointers to `xdp_md*` instead of copying values out.
