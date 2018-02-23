@@ -8,12 +8,12 @@ BPF_LICENSE("GPL");
 
 struct pfx_v4_t {
 	struct bpf_lpm_trie_key key;
-	uint8_t addr[4];
+	struct in_addr          src;
 };
 
 struct pfx_v6_t {
 	struct bpf_lpm_trie_key key;
-	uint8_t addr[16];
+	struct in6_addr         src;
 };
 
 #define RULE_TABLE_SIZE 1024
@@ -45,7 +45,7 @@ enum {
 
 static BPF_INLINE int handle_ip4(void *ptr, void *end)
 {
-	uint32_t        src, dst;
+	struct in_addr  src, dst;
 	uint64_t	off;
 	struct pfx_v4_t pfx = {};
 
@@ -54,7 +54,7 @@ static BPF_INLINE int handle_ip4(void *ptr, void *end)
 	}
 
 	pfx.key.prefixlen = 32;
-	memcpy(pfx.addr, &src, sizeof(src));
+	memcpy(&pfx.src, &src, sizeof(pfx.src));
 
 	int *rule = map_lookup_elem(&rules_v4, &pfx);
 	if (!rule) {
@@ -75,7 +75,7 @@ static BPF_INLINE int handle_ip6(void *ptr, void *end)
 	}
 
 	pfx.key.prefixlen = 128;
-	memcpy(pfx.addr, &src, sizeof(src));
+	memcpy(&pfx.src, &src, sizeof(pfx.src));
 
 	int *rule = map_lookup_elem(&rules_v6, &pfx);
 	if (!rule) {

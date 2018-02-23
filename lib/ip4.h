@@ -8,7 +8,8 @@
 #define IP_MF		0x2000
 #define IP_OFFMASK	0x1FFF
 
-static BPF_INLINE int parse_ip4(void *ptr, void *end, uint32_t *src, uint32_t *dst, uint64_t *off)
+static BPF_INLINE int parse_ip4(
+	void *ptr, void *end, struct in_addr *src, struct in_addr *dst, uint64_t *off)
 {
 	struct iphdr *hdr = ptr;
 
@@ -16,8 +17,8 @@ static BPF_INLINE int parse_ip4(void *ptr, void *end, uint32_t *src, uint32_t *d
 		return -1;
 	}
 
-	*src = hdr->saddr;
-	*dst = hdr->daddr;
+	memcpy(src, &hdr->saddr, sizeof(*src));
+	memcpy(dst, &hdr->daddr, sizeof(*dst));
 	*off = hdr->ihl << 2;
 
 	// Explicitly ban fragmentation.

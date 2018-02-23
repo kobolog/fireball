@@ -24,7 +24,7 @@ enum {
 
 static BPF_INLINE int handle_icmp4(void *ptr, void *end)
 {
-	uint32_t src, dst;
+	struct in_addr src, dst;
 	uint64_t off;
 
 	int proto = parse_ip4(ptr, end, &src, &dst, &off);
