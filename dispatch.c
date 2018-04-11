@@ -6,6 +6,11 @@
 
 BPF_LICENSE("GPL");
 
+enum {
+	DISPATCH_DROP,
+	DISPATCH_PASS,
+};
+
 BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 {
 	void *ptr = (void*)(uint64_t)ctx->data;
@@ -16,11 +21,13 @@ BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 
 	switch (proto) {
 	case htons(ETH_P_ARP):
+		increment(DISPATCH_PASS);
 		return XDP_PASS;
 	case htons(ETH_P_IP):
 	case htons(ETH_P_IPV6):
 		break;
 	default:
+		increment(DISPATCH_DROP);
 		return XDP_DROP;
 	}
 
