@@ -30,6 +30,14 @@ BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map iterator = {
 	.pinning	= PIN_GLOBAL_NS,
 };
 
+// Typical set of actions a ruleset could use for its rules.
+enum action {
+	ERROR = -1,
+	ALLOW,
+	DENY,
+	DEFER
+};
+
 // Forward the given frame to the next ruleset in the chain.
 static BPF_INLINE int forward(struct xdp_md *ctx)
 {
@@ -45,4 +53,23 @@ static BPF_INLINE int forward(struct xdp_md *ctx)
 
 	// Pass if no ruleset could come up with a decision.
 	return XDP_PASS;
+}
+
+// Per-CPU packet counters.
+BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map metrics = {
+	.type       = BPF_MAP_TYPE_PERCPU_ARRAY,
+	.size_key   = sizeof(int),
+	.size_value = sizeof(uint64_t),
+	.max_elem   = 1024,
+	.pinning    = PIN_OBJECT_NS,
+};
+
+static BPF_INLINE void increment(int id)
+{
+	uint64_t *it = (uint64_t*)map_lookup_elem(&metrics, &id);
+	if (!it) {
+		return;
+	}
+
+	lock_xadd(it, 1);
 }
