@@ -112,6 +112,7 @@ BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 	case ERROR: return XDP_DROP;
 	case ALLOW: return XDP_PASS;
 	case DENY:  return XDP_DROP;
+	case DEFER: return XDP_PASS;
 	}
 	
 	return forward(ctx);

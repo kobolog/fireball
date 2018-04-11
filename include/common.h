@@ -59,14 +59,14 @@ static BPF_INLINE int forward(struct xdp_md *ctx)
 BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map metrics = {
 	.type       = BPF_MAP_TYPE_PERCPU_ARRAY,
 	.size_key   = sizeof(int),
-	.size_value = sizeof(int64_t),
+	.size_value = sizeof(uint64_t),
 	.max_elem   = 1024,
 	.pinning    = PIN_OBJECT_NS,
 };
 
-static BPF_INLINE int increment(int id)
+static BPF_INLINE void increment(int id)
 {
-	int *it = (*int64_t)map_lookup_elem(&metrics, &id);
+	uint64_t *it = (uint64_t*)map_lookup_elem(&metrics, &id);
 	if (!it) {
 		return;
 	}

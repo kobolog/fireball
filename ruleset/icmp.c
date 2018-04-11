@@ -20,7 +20,7 @@ BPF_SEC(ELF_SECTION_MAPS) struct bpf_elf_map rules = {
 	.pinning	= PIN_OBJECT_NS,
 };
 
-static BPF_INLINE action handle_icmp4(void *ptr, void *end)
+static BPF_INLINE enum action handle_icmp4(void *ptr, void *end)
 {
 	struct in_addr src, dst;
 	uint64_t off;
@@ -71,6 +71,7 @@ BPF_SEC(ELF_SECTION_PROG) int handle(struct xdp_md *ctx)
 	case ERROR: return XDP_DROP;
 	case ALLOW: return XDP_PASS;
 	case DENY:  return XDP_DROP;
+	case DEFER: return XDP_PASS;
 	}
 	
 	return forward(ctx);
