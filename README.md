@@ -28,6 +28,6 @@ This will compile the main dispatch and all the rulesets into ELF BPF object fil
 
 # Optimization Ideas
 
-[ ] Pre-parse packets into TCP/UDP metadata in the dispatch.
-[ ] Incrementally parse packets in chain steps on demand.
-[ ] Parsing stores pointers to `xdp_md*` instead of copying values out.
+- [ ] Pre-parse packets into TCP/UDP metadata in the dispatch.
+- [ ] Incrementally parse packets in chain steps on demand.
+- [ ] Parsing stores pointers to `xdp_md*` instead of copying values out.
